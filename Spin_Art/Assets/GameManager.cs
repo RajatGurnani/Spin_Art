@@ -4,5 +4,18 @@ using UnityEngine;
 
 public class GameManager : MonoBehaviour
 {
-    
+    private void Start()
+    {
+
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+
+    }
+
+    private void OnTriggerExit(Collider other)
+    {
+
+    }
 }
