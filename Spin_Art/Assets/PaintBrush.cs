@@ -1,7 +1,5 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEditor;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class PaintBrush : MonoBehaviour
 {
@@ -12,12 +10,14 @@ public class PaintBrush : MonoBehaviour
     public MeshRenderer meshRenderer;
 
     public int textureSize = 512;
-    public Color color;
+    public Color brushColor;
     public Vector2 coordinates;
 
 
     [Range(1, 100)]
     public int brushRadius = 3;
+    public float[,] brushMatrix;
+    public Slider brushSlider;
 
     private void Start()
     {
@@ -28,10 +28,11 @@ public class PaintBrush : MonoBehaviour
         {
             colors[i] = Color.white;
         }
+        texture2D.filterMode = FilterMode.Bilinear;
+        texture2D.anisoLevel = 1;
         texture2D.SetPixels(colors);
-        //texture2D.SetPixels(((Texture2D)(meshRenderer.material.GetTexture("_MainTex"))).GetPixels());
-        //texture2D.Apply();
-        // texture2D.SetPixels((meshRenderer.material.GetTexture("MainTex") as Texture2D).GetPixels());
+
+        brushSlider.SetValueWithoutNotify(brushRadius);
     }
 
     private void Update()
@@ -42,7 +43,7 @@ public class PaintBrush : MonoBehaviour
             if (Input.GetMouseButton(0))
             {
                 Debug.Log(hitInfo.textureCoord);
-                ChangeColor(hitInfo.textureCoord);
+                ChangeColor2(hitInfo.textureCoord);
             }
         }
     }
@@ -57,24 +58,75 @@ public class PaintBrush : MonoBehaviour
         {
             for (int j = 0; j < brushRadius; j++)
             {
-                texture2D.SetPixel(Mathf.Clamp(width + i, 0, texture2D.width), Mathf.Clamp(height + j, 0, texture2D.height), color);
+                texture2D.SetPixel(Mathf.Clamp(width + i, 0, texture2D.width), Mathf.Clamp(height + j, 0, texture2D.height), brushColor);
             }
         }
-        //texture2D.SetPixel(width, height, color);
         texture2D.Apply();
-        meshRenderer.material.SetTexture("_MainTex", texture2D);
+        MaterialPropertyBlock propertyBlock = new MaterialPropertyBlock();
+        meshRenderer.GetPropertyBlock(propertyBlock);
+        propertyBlock.SetTexture("_Main_Texture", texture2D);
+        //meshRenderer.GetComponent<Renderer>().material.SetTexture("_MainTex", texture2D);
+        meshRenderer.SetPropertyBlock(propertyBlock);
+    }
+
+
+    public void ChangeColor2(Vector2 textureCoord)
+    {
+        int width = (int)(textureCoord.x * texture2D.width);
+        int height = (int)(textureCoord.y * texture2D.height);
+        int length = 2 * brushRadius + 1;
+
+        int offsetX = width - brushRadius;
+        int offsetY = height - brushRadius;
+
+        for (int i = 0; i < length; i++)
+        {
+            for (int j = 0; j < length; j++)
+            {
+                Color currentColor = texture2D.GetPixel(i + offsetX, j + offsetY);
+                Color newColor = Color.Lerp(brushColor, currentColor, brushMatrix[i, j]);
+                texture2D.SetPixel(Mathf.Clamp(i + offsetX, 0, texture2D.width), Mathf.Clamp(j + offsetY, 0, texture2D.height), newColor);
+            }
+        }
+        texture2D.Apply();
+        MaterialPropertyBlock propertyBlock = new MaterialPropertyBlock();
+        meshRenderer.GetPropertyBlock(propertyBlock);
+        propertyBlock.SetTexture("_Main_Texture", texture2D);
+        meshRenderer.SetPropertyBlock(propertyBlock);
     }
 
     public void SetBrushColorR(float value)
     {
-        color.r = value;
+        brushColor.r = value;
     }
     public void SetBrushColorG(float value)
     {
-        color.g = value;
+        brushColor.g = value;
     }
     public void SetBrushColorB(float value)
     {
-        color.b = value;
+        brushColor.b = value;
+    }
+
+    public void GenerateBrush(float size)
+    {
+        brushRadius = (int)size;
+        brushMatrix = new float[2 * brushRadius + 1, 2 * brushRadius + 1];
+        int length = 2 * brushRadius + 1;
+
+        for (int i = 0; i < length; i++)
+        {
+            for (int j = 0; j < length; j++)
+            {
+                float distance = new Vector2(i - brushRadius, j - brushRadius).magnitude;
+                brushMatrix[i, j] = distance / brushRadius;
+                Debug.Log(brushMatrix[i, j]);
+            }
+        }
+    }
+
+    public void CircularMask()
+    {
+
     }
 }
