@@ -1,13 +1,11 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class Table : MonoBehaviour
 {
-    public float rotateSpeed = 10f;
+    public float rotateSpeed = 1f;
 
     private void Update()
     {
-        transform.Rotate(Vector3.forward, rotateSpeed * Time.deltaTime, Space.Self);
+        transform.Rotate(Vector3.forward, 360 * rotateSpeed * Time.deltaTime, Space.Self);
     }
 }

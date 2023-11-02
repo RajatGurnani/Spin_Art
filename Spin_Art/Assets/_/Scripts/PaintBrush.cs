@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -11,28 +12,22 @@ public class PaintBrush : MonoBehaviour
 
     public int textureSize = 512;
     public Color brushColor;
+    public List<Color> colors;
+    public bool randomColor = false;
     public Vector2 coordinates;
 
 
     [Range(1, 100)]
     public int brushRadius = 3;
     public float[,] brushMatrix;
-    public Slider brushSlider;
+
+    public ComputeShader brushGeneratorComputeShader;
 
     private void Start()
     {
         cam = Camera.main;
-        texture2D = new Texture2D(textureSize, textureSize);
-        Color[] colors = new Color[texture2D.width * texture2D.height];
-        for (int i = 0; i < colors.Length; i++)
-        {
-            colors[i] = Color.white;
-        }
-        texture2D.filterMode = FilterMode.Bilinear;
-        texture2D.anisoLevel = 1;
-        texture2D.SetPixels(colors);
 
-        brushSlider.SetValueWithoutNotify(brushRadius);
+        ResetCanvasTexture(Color.white);
     }
 
     private void Update()
@@ -43,7 +38,15 @@ public class PaintBrush : MonoBehaviour
             if (Input.GetMouseButton(0))
             {
                 Debug.Log(hitInfo.textureCoord);
-                ChangeColor2(hitInfo.textureCoord);
+                if (randomColor)
+                {
+                    brushColor = colors[Random.Range(0, colors.Count)];
+                    ChangeColor2(hitInfo.textureCoord);//, colors[Random.Range(0, colors.Length)]);
+                }
+                else
+                {
+                    ChangeColor2(hitInfo.textureCoord);
+                }
             }
         }
     }
@@ -65,7 +68,6 @@ public class PaintBrush : MonoBehaviour
         MaterialPropertyBlock propertyBlock = new MaterialPropertyBlock();
         meshRenderer.GetPropertyBlock(propertyBlock);
         propertyBlock.SetTexture("_Main_Texture", texture2D);
-        //meshRenderer.GetComponent<Renderer>().material.SetTexture("_MainTex", texture2D);
         meshRenderer.SetPropertyBlock(propertyBlock);
     }
 
@@ -123,6 +125,25 @@ public class PaintBrush : MonoBehaviour
                 Debug.Log(brushMatrix[i, j]);
             }
         }
+    }
+
+    public void ResetCanvasTexture(Color color)
+    {
+        texture2D = new Texture2D(textureSize, textureSize);
+        Color[] colors = new Color[texture2D.width * texture2D.height];
+        for (int i = 0; i < colors.Length; i++)
+        {
+            colors[i] = color;
+        }
+        texture2D.filterMode = FilterMode.Bilinear;
+        texture2D.anisoLevel = 1;
+        texture2D.SetPixels(colors);
+        texture2D.Apply();
+
+        MaterialPropertyBlock propertyBlock = new MaterialPropertyBlock();
+        meshRenderer.GetPropertyBlock(propertyBlock);
+        propertyBlock.SetTexture("_Main_Texture", texture2D);
+        meshRenderer.SetPropertyBlock(propertyBlock);
     }
 
     public void CircularMask()
