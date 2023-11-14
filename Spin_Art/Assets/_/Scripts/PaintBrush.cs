@@ -22,6 +22,8 @@ public class PaintBrush : MonoBehaviour
     public float[,] brushMatrix;
 
     public ComputeShader brushGeneratorComputeShader;
+    public RenderTexture renderTexture;
+    public Material material;
 
     private void Start()
     {
@@ -95,6 +97,13 @@ public class PaintBrush : MonoBehaviour
         meshRenderer.GetPropertyBlock(propertyBlock);
         propertyBlock.SetTexture("_Main_Texture", texture2D);
         meshRenderer.SetPropertyBlock(propertyBlock);
+
+        material.SetFloat("_Rotation", 1f);
+        //renderTexture = new RenderTexture(texture2D.width,texture2D.height,32);
+        //renderTexture.enableRandomWrite = true;
+        //renderTexture.Create();
+        //renderTexture.format = RenderTextureFormat.ARGBFloat;
+        Graphics.Blit(texture2D, renderTexture, material);
     }
 
     public void SetBrushColorR(float value)
