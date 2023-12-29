@@ -41,6 +41,9 @@ public class PaintBrush : MonoBehaviour
         ResetCanvasTexture(Color.white);
     }
 
+    public Vector2 prevMousePosition;
+    public Vector2 currentMousePosition;
+
     private void Update()
     {
         Debug.Log(texture2D.mipmapCount);
@@ -62,7 +65,6 @@ public class PaintBrush : MonoBehaviour
                     ChangeColor2(hitInfo.textureCoord);
                 }
             }
-
         }
     }
 
