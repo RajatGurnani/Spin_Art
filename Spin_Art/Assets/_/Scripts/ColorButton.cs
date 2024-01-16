@@ -7,30 +7,43 @@ public class ColorButton : MonoBehaviour
     PaintBrush paintBrush;
     Toggle toggle;
 
-    private void Start()
+    private void Awake()
     {
-        GetComponentInChildren<Image>().color = color;
-        paintBrush = FindObjectOfType<PaintBrush>();
         toggle = GetComponent<Toggle>();
+        toggle.group = GetComponentInParent<ToggleGroup>();
+        SetButton(color);
+        paintBrush = FindObjectOfType<PaintBrush>();
         toggle.onValueChanged.AddListener(ToggleColor);
+    }
 
-        ToggleColor(toggle.isOn);
+    public void SetButton(Color color)
+    {
+        this.color = color;
+        GetComponentInChildren<Image>().color = color;
     }
 
     public void ToggleColor(bool value)
     {
-        if (value)
+        if (paintBrush!=null)
         {
-            if (!paintBrush.colors.Contains(color))
+            if (value)
             {
-                paintBrush.colors.Add(color);
+                paintBrush.brushColor = color;
             }
-        }
-        else
-        {
-            if (paintBrush.colors.Contains(color))
+            return;
+            if (value)
             {
-                paintBrush.colors.Remove(color);
+                if (!paintBrush.colors.Contains(color))
+                {
+                    paintBrush.colors.Add(color);
+                }
+            }
+            else
+            {
+                if (paintBrush.colors.Contains(color))
+                {
+                    paintBrush.colors.Remove(color);
+                }
             }
         }
     }

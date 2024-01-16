@@ -1,5 +1,5 @@
+using RDG;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 public class PaintBrush : MonoBehaviour
@@ -14,8 +14,6 @@ public class PaintBrush : MonoBehaviour
     public Color brushColor;
     public List<Color> colors;
     public bool randomColor = false;
-    public Vector2 coordinates;
-
 
     [Range(1, 100)]
     public int brushRadius = 3;
@@ -33,6 +31,8 @@ public class PaintBrush : MonoBehaviour
 
     public Color[] testColors;
 
+    public AudioSource audioSource;
+
     private void Start()
     {
         timeTracker = FindObjectOfType<TimeTracker>();
@@ -46,23 +46,30 @@ public class PaintBrush : MonoBehaviour
 
     private void Update()
     {
-        Debug.Log(texture2D.mipmapCount);
         if (Physics.Raycast(cam.ScreenPointToRay(Input.mousePosition), out RaycastHit hitInfo, Mathf.Infinity, layerMask))
         {
-            coordinates = hitInfo.textureCoord;
             if (Input.GetMouseButton(0))
             {
                 timeTracker.paintStarted = true;
                 timeTracker.IncrementOnTime();
-                //Debug.Log(hitInfo.textureCoord);
-                if (randomColor)
+
+                Vibration.Vibrate(Mathf.Clamp((int)(Time.deltaTime * 1000), 10, 100), 30 , false);
+                ChangeColor2(hitInfo.textureCoord);
+
+                if (audioSource != null)
                 {
-                    brushColor = colors[Random.Range(0, colors.Count)];
-                    ChangeColor2(hitInfo.textureCoord);//, colors[Random.Range(0, colors.Length)]);
+                    if (!audioSource.isPlaying)
+                    {
+                        audioSource.Play();
+                    }
+                    audioSource.UnPause();
                 }
-                else
+            }
+            else
+            {
+                if (audioSource != null)
                 {
-                    ChangeColor2(hitInfo.textureCoord);
+                    audioSource.Pause();
                 }
             }
         }
@@ -81,7 +88,6 @@ public class PaintBrush : MonoBehaviour
         int width = (int)(textureCoord.x * texture2D.width);
         int height = (int)(textureCoord.y * texture2D.height);
 
-        Vector2Int coordinate = Vector2Int.zero;
         for (int i = 0; i < brushRadius; i++)
         {
             for (int j = 0; j < brushRadius; j++)
@@ -90,17 +96,16 @@ public class PaintBrush : MonoBehaviour
             }
         }
         texture2D.Apply();
-        MaterialPropertyBlock propertyBlock = new MaterialPropertyBlock();
+        MaterialPropertyBlock propertyBlock = new();
         meshRenderer.GetPropertyBlock(propertyBlock);
         propertyBlock.SetTexture("_Main_Texture", texture2D);
         meshRenderer.SetPropertyBlock(propertyBlock);
     }
 
-    public Vector2Int size = new Vector2Int();
+    public Vector2Int size = new();
     public void ChangeColor2(Vector2 textureCoord)
     {
-        Vector2Int midPoint = new Vector2Int((int)(texture2D.width * textureCoord.x), (int)(texture2D.height * textureCoord.y));
-
+        Vector2Int midPoint = new((int)(texture2D.width * textureCoord.x), (int)(texture2D.height * textureCoord.y));
 
         int width = (int)(textureCoord.x * texture2D.width);
         int height = (int)(textureCoord.y * texture2D.height);
@@ -109,8 +114,8 @@ public class PaintBrush : MonoBehaviour
         int offsetX = width - brushRadius;
         int offsetY = height - brushRadius;
 
-        Vector2Int startPoint = new Vector2Int(Mathf.Clamp(midPoint.x - brushRadius, 0, texture2D.width - 1), Mathf.Clamp(midPoint.y - brushRadius, 0, texture2D.height - 1));
-        Vector2Int endPoint = new Vector2Int(Mathf.Clamp(midPoint.x + brushRadius, 0, texture2D.width - 1), Mathf.Clamp(midPoint.y + brushRadius, 0, texture2D.height - 1));
+        Vector2Int startPoint = new(Mathf.Clamp(midPoint.x - brushRadius, 0, texture2D.width - 1), Mathf.Clamp(midPoint.y - brushRadius, 0, texture2D.height - 1));
+        Vector2Int endPoint = new(Mathf.Clamp(midPoint.x + brushRadius, 0, texture2D.width - 1), Mathf.Clamp(midPoint.y + brushRadius, 0, texture2D.height - 1));
         //Debug.Log($"{nameof(midPoint)} {midPoint}\n" +
         //          $"{nameof(startPoint)} {startPoint}\n" +
         //          $"{nameof(endPoint)} {endPoint}\n" +
@@ -166,6 +171,7 @@ public class PaintBrush : MonoBehaviour
 
     public void GenerateBrush(float size)
     {
+        Debug.Log("generating brush");
         brushRadius = (int)size;
         brushMatrix = new float[2 * brushRadius + 1, 2 * brushRadius + 1];
         int length = 2 * brushRadius + 1;
@@ -194,14 +200,9 @@ public class PaintBrush : MonoBehaviour
         texture2D.SetPixels(colors);
         texture2D.Apply(updateMipmaps: false);
 
-        MaterialPropertyBlock propertyBlock = new MaterialPropertyBlock();
+        MaterialPropertyBlock propertyBlock = new();
         meshRenderer.GetPropertyBlock(propertyBlock);
         propertyBlock.SetTexture("_Main_Texture", texture2D);
         meshRenderer.SetPropertyBlock(propertyBlock);
-    }
-
-    public void CircularMask()
-    {
-
     }
 }

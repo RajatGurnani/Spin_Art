@@ -1,18 +1,24 @@
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
-public class GameManager :MonoBehaviour
+public class GameManager : Singleton<GameManager>
 {
+    public PlayerData playerData;
+
+    public override void Awake()
+    {
+        base.Awake();
+        name = nameof(GameManager);
+        playerData = SaveSystem.LoadPlayerData();
+    }
+
     private void Start()
     {
         Application.targetFrameRate = 60;
     }
 
-    private void Update()
+    [EasyButtons.Button]
+    public void ResetDate()
     {
-        if (Input.GetKeyDown(KeyCode.Space))
-        {
-            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
-        }
+        SaveSystem.SavePlayerData(playerData);
     }
 }
