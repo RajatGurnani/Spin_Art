@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -23,7 +21,7 @@ public class CanvasPainter : MonoBehaviour
         {
             Vector2 localPoint;
             Rect r = table.rectTransform.rect;
-            RectTransformUtility.ScreenPointToLocalPointInRectangle(table.rectTransform, Input.mousePosition,Camera.main, out localPoint);
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(table.rectTransform, Input.mousePosition, Camera.main, out localPoint);
 
             Debug.Log(localPoint);
             int px = Mathf.Clamp((int)(((localPoint.x - r.x) * texture2D.width) / r.width), 0, texture2D.width);

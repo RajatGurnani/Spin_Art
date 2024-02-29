@@ -1,12 +1,10 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
 public class HoldButton : MonoBehaviour
 {
     public float currentPressTime = 0f;
-    public float pressDuration=2.5f;
+    public float pressDuration = 2.5f;
     public bool pressing = false;
     public bool pressComplete = false;
 

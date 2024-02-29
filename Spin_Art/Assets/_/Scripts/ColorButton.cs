@@ -24,7 +24,7 @@ public class ColorButton : MonoBehaviour
 
     public void ToggleColor(bool value)
     {
-        if (paintBrush!=null)
+        if (paintBrush != null)
         {
             if (value)
             {

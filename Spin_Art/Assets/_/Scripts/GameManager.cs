@@ -13,10 +13,9 @@ public class GameManager : Singleton<GameManager>
 
     private void Start()
     {
-        Application.targetFrameRate = 60;
+        Application.targetFrameRate = Screen.currentResolution.refreshRate;
     }
 
-    [EasyButtons.Button]
     public void ResetDate()
     {
         SaveSystem.SavePlayerData(playerData);

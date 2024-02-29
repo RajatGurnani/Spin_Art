@@ -33,7 +33,6 @@ public class AuctionSystem : MonoBehaviour
         startPrice = (int)Mathf.Clamp(sellingPrice * 0.05f, zeroHammerThreshold * 0.5f, zeroHammerThreshold * 2);
     }
 
-    [EasyButtons.Button]
     public void Buy()
     {
         Debug.ClearDeveloperConsole();
